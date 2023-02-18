@@ -1,7 +1,7 @@
 from datetime import datetime
 from random import randrange # Импортируется функция выбора случайного значения
 
-from flask import Flask, render_template, redirect, url_for
+from flask import Flask, render_template, redirect, url_for, flash
 from flask_sqlalchemy import SQLAlchemy
 from flask_wtf import FlaskForm
 from wtforms import StringField, SubmitField, TextAreaField, URLField
@@ -72,6 +72,13 @@ def add_opinion_view():
     form = OpinionForm()
     # Если ошибок не возникло, то
     if form.validate_on_submit():
+        text = form.text.data
+         # Если в БД уже есть мнение с текстом, который ввёл пользователь,
+        if Opinion.query.filter_by(text=text).first() is not None:
+            # вызвать функцию flash и передать соответствующее сообщение
+            flash('Такое мнение уже было оставлено ранее!', 'free-message') # free-message - это категория flash сообщения(для шаблона), если flash не один
+            # и вернуть пользователя на страницу «Добавить новое мнение»
+            return render_template('add_opinion.html', form=form)
         # нужно создать новый экземпляр класса Opinion
         opinion = Opinion(
             title=form.title.data,
