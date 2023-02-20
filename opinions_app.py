@@ -9,6 +9,8 @@ from wtforms.validators import DataRequired, Length, Optional
 from flask_migrate import Migrate
 
 from pathlib import Path
+import csv
+import click
 
 BASE_DIR = Path(__file__).parent
 
@@ -124,6 +126,31 @@ def opinion_view(id):
     # И передавать его в шаблон
     return render_template('opinion.html', opinion=opinion)
 
+
+@app.cli.command('load_opinions')
+def load_opinions_command():
+    """Функция загрузки мнений в базу данных."""
+    # Открывается файл
+    with open('opinions.csv', encoding='utf-8') as f:
+        # Создаётся итерируемый объект, который отображает каждую строку
+        # в качестве словаря с ключами из шапки файла
+        reader = csv.DictReader(f)
+        # Для подсчёта строк добавляется счётчик
+        counter = 0
+        for row in reader:
+            # Распакованный словарь можно использовать
+            # для создания объекта мнения
+            opinion = Opinion(**row)
+            # Изменения нужно зафиксировать
+            db.session.add(opinion)
+            db.session.commit()
+            counter += 1
+    click.echo(f'Загружено мнений: {counter}')
+    # Если пользовательская команда подразумевает вывод текстовых данных в консоль или файл,
+    # рекомендуется использовать функцию click.echo(), а не print().
+    # Функция click.echo() корректно работает с Unicode в Windows.
+
+
 if __name__ == '__main__':
     app.run()
 
@@ -195,3 +222,24 @@ if __name__ == '__main__':
 # Опциональный параметр -m позволяет добавить короткий комментарий к создаваемой миграции.
 # Старайтесь добавлять такие комментарии, потом будет легче ориентироваться в созданных миграциях.
 #  flask db upgrade
+
+
+# Собственная команда
+# Чтобы создать собственную команду для приложения на Flask,
+# нужно описать соответствующую функцию в коде проекта и применить к ней декоратор @app.cli.command().
+    # Декоратор @app.cli.command() первым аргументом принимает строку, которая используется как имя команды.
+    # Если имя не задано, оно генерируется из названия функции. Например,
+    # для функции hello_command автоматически сгенерируется имя команды hello-command.
+
+# Также каждой команде можно дать описание.
+# Описание — это докстринг соответствующей функции.
+# Например, если в терминале вызвать команду flask
+
+        # (venv) flask
+
+        # ...
+        # Commands:
+        #   db          Perform database migrations
+        #   routes      Show the routes for the app.
+        #   run         Run a development server.
+        #   shell       Run a shell in the app context.
