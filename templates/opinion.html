@@ -14,6 +14,12 @@
           {% else %} источник не указан {% endif %}
         </p>
         <p>
+          Автор мнения:
+          {% if opinion.added_by %}
+              {{ opinion.added_by }}
+          {% else %} нет автора {% endif %}
+        </p>
+        <p>
           Ссылка для друзей:
           <a href="{{ url_for('opinion_view', id=opinion.id, _external=True) }}">{{ url_for('opinion_view', id=opinion.id, _external=True) }}</a>
         </p>

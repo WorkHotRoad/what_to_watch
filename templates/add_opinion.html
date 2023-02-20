@@ -19,6 +19,7 @@
           {{ form.source(class="form-control form-control-lg py-3 mb-3", placeholder=form.source.label.text) }}
           <p></p>
           {{ form.text(class="form-control form-control-lg py-3 mb-3", placeholder=form.text.label.text, rows="3", cols="40")}}
+          {{ form.added_by(class="form-control form-control-lg py-3 mb-3", placeholder=form.added_by.label.text)}}
           {{ form.submit(class="button px-5 py-3 btn") }}
           <p class="py-3 mb-3" style="color: red">
             {% with messages = get_flashed_messages(category_filter=["free-message"]) %}

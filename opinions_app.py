@@ -1,11 +1,12 @@
 from datetime import datetime
 from random import randrange # Импортируется функция выбора случайного значения
 
-from flask import Flask, render_template, redirect, url_for, flash
+from flask import Flask, render_template, redirect, url_for, flash, abort
 from flask_sqlalchemy import SQLAlchemy
 from flask_wtf import FlaskForm
 from wtforms import StringField, SubmitField, TextAreaField, URLField
 from wtforms.validators import DataRequired, Length, Optional
+from flask_migrate import Migrate
 
 from pathlib import Path
 
@@ -18,7 +19,7 @@ app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 app.config['SECRET_KEY'] = 'MY SECRET KEY'
 
 db = SQLAlchemy(app)
-
+migrate = Migrate(app, db)
 
 class Opinion(db.Model):
     # ID — целое число, первичный ключ
@@ -33,6 +34,8 @@ class Opinion(db.Model):
     # Дата и время — текущее время,
     # по этому столбцу база данных будет проиндексирована
     timestamp = db.Column(db.DateTime, index=True, default=datetime.utcnow)
+    # Новое поле
+    added_by = db.Column(db.String(64))
 
 
 class OpinionForm(FlaskForm):
@@ -49,7 +52,25 @@ class OpinionForm(FlaskForm):
         'Добавьте ссылку на подробный обзор фильма',
         validators=[Length(1, 256), Optional()]
     )
+    added_by = StringField(
+        'автор описания',
+        validators=[Length(4, 70), Optional()]
+    )
     submit = SubmitField('Добавить')
+
+
+
+@app.errorhandler(404)
+def page_not_found(error):
+    # В качестве ответа возвращается собственный шаблон
+    # и код ошибки
+    return render_template('404.html'), 404
+
+@app.errorhandler(500)
+def internal_error(error):
+    # В таких случаях можно откатить незафиксированные изменения в БД
+    db.session.rollback()
+    return render_template('500.html'), 500
 
 
 @app.route('/')
@@ -59,7 +80,8 @@ def index_view():
     # Если мнений нет,
     if not quantity:
         # то возвращается сообщение
-        return 'В базе данных мнений о фильмах нет.'
+        # return 'В базе данных мнений о фильмах нет.'
+        abort(404)
     # Иначе выбирается случайное число в диапазоне от 0 и до quantity
     offset_value = randrange(quantity)
     # И определяется случайный объект
@@ -83,7 +105,8 @@ def add_opinion_view():
         opinion = Opinion(
             title=form.title.data,
             text=form.text.data,
-            source=form.source.data
+            source=form.source.data,
+            added_by = form.added_by.data
         )
         # Затем добавить его в сессию работы с базой данных
         db.session.add(opinion)
@@ -154,3 +177,21 @@ if __name__ == '__main__':
 # [<Opinion 3>]
 #  Также эти методы можно применять одновременно:
 # >>> Opinion.query.offset(1).limit(1).all()
+
+        # Миграции
+#  Для SQLAlchemy была разработана специальная библиотека миграции баз данных — Alembic.
+#  Для приложений на Flask существует её обёртка — модуль Flask-Migrate.
+#  Именно с ней вам и предстоит сейчас поработать.
+#  pip install Flask-Migrate==3.1.0
+    #  from flask_migrate import Migrate
+    # db = SQLAlchemy(app)
+    # migrate = Migrate(app, db)
+# Создайте репозиторий с помощью команды: flask db init
+# Репозиторий миграций создаётся один раз.
+# Все созданные папки и файлы миграций становятся частью проекта
+# и их нельзя игнорировать при работе с системами управления версий, например, с Git.
+#  после этого можно менять модеди
+#  flask db migrate -m "added added_by field"
+# Опциональный параметр -m позволяет добавить короткий комментарий к создаваемой миграции.
+# Старайтесь добавлять такие комментарии, потом будет легче ориентироваться в созданных миграциях.
+#  flask db upgrade
