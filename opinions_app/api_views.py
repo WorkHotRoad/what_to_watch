@@ -2,6 +2,8 @@ from flask import jsonify, request
 
 from . import app, db
 from .models import Opinion
+import random
+from .views import random_opinion
 
 
 # Явно разрешить метод GET
@@ -16,6 +18,15 @@ def get_opinion(id):
 @app.route('/api/opinions/<int:id>/', methods=['PATCH'])
 def update_opinion(id):
     data = request.get_json()
+    if (
+        'text' in data and 
+        Opinion.query.filter_by(text=data['text']).first() is not None
+    ):
+        # При неуникальном значении поля text
+        # возвращаем сообщение об ошибке в формате JSON 
+        # и статус-код 400
+        return jsonify({'error': 
+                        'Такое мнение уже есть в базе данных'}), 400
     opinion = Opinion.query.get_or_404(id)
     # Если метод get_or_404 не найдёт указанный ключ,
     # то он выбросит исключение 404
@@ -44,3 +55,44 @@ def get_opinions():
     # а потом все объекты помещаются в список opinions_list
     opinions_list = [opinion.to_dict() for opinion in opinions]
     return jsonify({'opinions': opinions_list}), 200
+
+@app.route('/api/opinions/', methods=['POST'])
+def add_opinion():
+    # Получение данные из запроса в виде словаря
+    data = request.get_json()
+    # Если нужных ключей нет в словаре,
+    if 'title' not in data or 'text' not in data:
+        # ...то возвращаем сообщение об ошибке в формате JSON и код 400:
+        return jsonify({'error':
+                        'В запросе отсутствуют обязательные поля'}), 400
+    # Если в базе данных уже есть объект 
+    # с таким же значением поля text
+    if Opinion.query.filter_by(text=data['text']).first() is not None:
+        # ...возвращаем сообщение об ошибке в формате JSON 
+        # и статус-код 400
+        return jsonify({'error': 
+                        'Такое мнение уже есть в базе данных'}), 400
+    # Создание нового пустого экземпляра модели
+    opinion = Opinion()
+    # Наполнение его данными из запроса 
+    opinion.from_dict(data)
+    # Добавление новой записи в базу данных
+    db.session.add(opinion)
+    # Сохранение изменений
+    db.session.commit()
+    return jsonify({'opinion': opinion.to_dict()}), 201
+
+@app.route('/api/get-random-opinion/', methods=['GET'])
+def get_random_opinion():
+    # мое решение без доп функций
+    # opinions = Opinion.query.all()
+    # list_id = [x.id for x in opinions]
+    # id = random.choice(list_id)
+    # opinion_random = Opinion.query.get_or_404(id)
+    # return jsonify({'opinion': opinion_random.to_dict()}), 200
+
+    # не мое решение
+    # тут создается отдельная ф-я в views -random_opinion()
+    opinion = random_opinion()
+    return jsonify({'opinion': opinion.to_dict()}), 200 
+
