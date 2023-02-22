@@ -21,12 +21,12 @@ class Opinion(db.Model):
 
     def to_dict(self):
         return dict(
-            id = self.id,
-            title = self.title,
-            text = self.text,
-            source = self.source,
-            timestamp = self.timestamp,
-            added_by = self.added_by
+            id=self.id,
+            title=self.title,
+            text=self.text,
+            source=self.source,
+            timestamp=self.timestamp,
+            added_by=self.added_by
         )
 
     # Добавляем в модель метод-десериализатор.

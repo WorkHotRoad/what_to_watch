@@ -6,12 +6,14 @@ from . import app, db
 from .forms import OpinionForm
 from .models import Opinion
 
+
 def random_opinion():
     quantity = Opinion.query.count()
     if quantity:
         offset_value = randrange(quantity)
         opinion = Opinion.query.offset(offset_value).first()
         return opinion
+
 
 @app.route('/')
 def index_view():
@@ -27,7 +29,7 @@ def add_opinion_view():
     # Если ошибок не возникло, то
     if form.validate_on_submit():
         text = form.text.data
-         # Если в БД уже есть мнение с текстом, который ввёл пользователь,
+        # Если в БД уже есть мнение с текстом, который ввёл пользователь,
         if Opinion.query.filter_by(text=text).first() is not None:
             # вызвать функцию flash и передать соответствующее сообщение
             flash('Такое мнение уже было оставлено ранее!', 'free-message') # free-message - это категория flash сообщения(для шаблона), если flash не один

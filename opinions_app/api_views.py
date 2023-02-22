@@ -1,10 +1,9 @@
 from flask import jsonify, request
 
 from . import app, db
+from .error_handlers import InvalidAPIUsage
 from .models import Opinion
-import random
 from .views import random_opinion
-from . error_handlers import InvalidAPIUsage
 
 
 # Явно разрешить метод GET

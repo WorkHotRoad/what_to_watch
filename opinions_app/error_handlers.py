@@ -1,4 +1,4 @@
-from flask import render_template, jsonify
+from flask import jsonify, render_template
 
 from . import app, db
 
@@ -8,6 +8,7 @@ def page_not_found(error):
     # В качестве ответа возвращается собственный шаблон
     # и код ошибки
     return render_template('404.html'), 404
+
 
 @app.errorhandler(500)
 def internal_error(error):
@@ -19,6 +20,7 @@ def internal_error(error):
 class InvalidAPIUsage(Exception):
     # Если статус-код для ответа API не указан — вернётся код 400
     status_code = 400
+
     # Конструктор класса InvalidAPIUsage принимает на вход
     # текст сообщения и статус-код ошибки (необязательно)
     def __init__(self, message, status_code=None):
@@ -29,9 +31,10 @@ class InvalidAPIUsage(Exception):
         if status_code is not None:
             self.status_code = status_code
 
-     # Метод для сериализации переданного сообщения об ошибке
+    # Метод для сериализации переданного сообщения об ошибке
     def to_dict(self):
-        return dict(message = self.message)
+        return dict(message=self.message)
+
 
 # Обработчик кастомного исключения для API
 @app.errorhandler(InvalidAPIUsage)

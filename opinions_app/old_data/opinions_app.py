@@ -1,16 +1,16 @@
+import csv
 from datetime import datetime
-from random import randrange # Импортируется функция выбора случайного значения
+from pathlib import Path
+from random import \
+    randrange  # Импортируется функция выбора случайного значения
 
-from flask import Flask, render_template, redirect, url_for, flash, abort
+import click
+from flask import Flask, abort, flash, redirect, render_template, url_for
+from flask_migrate import Migrate
 from flask_sqlalchemy import SQLAlchemy
 from flask_wtf import FlaskForm
 from wtforms import StringField, SubmitField, TextAreaField, URLField
 from wtforms.validators import DataRequired, Length, Optional
-from flask_migrate import Migrate
-
-from pathlib import Path
-import csv
-import click
 
 BASE_DIR = Path(__file__).parent
 
