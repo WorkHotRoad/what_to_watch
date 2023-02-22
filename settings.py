@@ -14,9 +14,9 @@ class Config(object):
     SECRET_KEY = os.getenv('SECRET_KEY')
 
 
-#  in .env file
+# create.env file with data:
 # FLASK_APP=opinions_app
 # FLASK_ENV=development
-# FLASK_DEBUG = 1
-# DATABASE_URI= opinions_app\\db.sqlite3
+# FLASK_DEBUG=1
+# DATABASE_URI=opinions_app\\db.sqlite3
 # SECRET_KEY=YOUR_SECRET_KEY
